@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculatrice Scientifique</title>
+    <style>
+        :root {
+            --background-color: #ecf0f1;
+            --button-color: #34495e;
+            --button-hover-color: #2c3e50;
+            --display-background: #bdc3c7;
+            --history-background: #d5dbdb;
+            --error-color: #e74c3c;
+            --neon-glow: rgba(255, 255, 255, 0.5);
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #2c3e50;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            transition: background-color 0.5s;
+        }
+
+        .calculatrice {
+            width: 320px;
+            background: var(--background-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .historique {
+            width: 100%;
+            height: 60px;
+            font-size: 0.9em;
+            text-align: right;
+            padding: 5px 10px;
+            color: #555;
+            background: var(--history-background);
+            border-radius: 5px;
+            overflow-y: auto;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .affichage {
+            width: 100%;
+            height: 50px;
+            font-size: 1.5em;
+            text-align: right;
+            padding: 10px;
+            border: none;
+            outline: none;
+            background: var(--display-background);
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .boutons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        button {
+            width: 100%;
+            height: 50px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            background: var(--button-color);
+            color: white;
+            transition: transform 0.1s, background 0.3s, box-shadow 0.3s;
+        }
+
+        button:hover {
+            background: var(--button-hover-color);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--neon-glow);
+        }
+
+        .egal {
+            grid-column: span 2;
+            background: #e74c3c;
+        }
+
+        .egal:hover {
+            background: #c0392b;
+        }
+
+        .vider {
+            background: #f39c12;
+        }
+
+        .vider:hover {
+            background: #e67e22;
+        }
+
+        .selecteur-theme {
+            margin-bottom: 10px;
+        }
+
+        .chatbot {
+            margin-top: 20px;
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            max-height: 400px;
+        }
+
+        .chatbot .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            max-height: 200px;
+        }
+
+        .chatbot input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: calc(100% - 20px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculatrice">
+    <select class="selecteur-theme" onchange="changerTheme(event)">
+        <option value="clair">Clair</option>
+        <option value="sombre">Sombre</option>
+        <option value="neon">Néon</option>
+        <option value="retro">Rétro</option>
+    </select>
+    <div class="historique" id="historique"></div>
+    <input type="text" class="affichage" id="affichage" onkeydown="gererTouche(event)">
+    <div class="boutons">
+        <button onclick="effacerAffichage()" class="vider">C</button>
+        <button onclick="ajouterAffichage('(')">(</button>
+        <button onclick="ajouterAffichage(')')">)</button>
+        <button onclick="ajouterAffichage('/')">÷</button>
+
+        <button onclick="ajouterAffichage('7')">7</button>
+        <button onclick="ajouterAffichage('8')">8</button>
+        <button onclick="ajouterAffichage('9')">9</button>
+        <button onclick="ajouterAffichage('*')">×</button>
+
+        <button onclick="ajouterAffichage('4')">4</button>
+        <button onclick="ajouterAffichage('5')">5</button>
+        <button onclick="ajouterAffichage('6')">6</button>
+        <button onclick="ajouterAffichage('-')">−</button>
+
+        <button onclick="ajouterAffichage('1')">1</button>
+        <button onclick="ajouterAffichage('2')">2</button>
+        <button onclick="ajouterAffichage('3')">3</button>
+        <button onclick="ajouterAffichage('+')">+</button>
+
+        <button onclick="ajouterAffichage('0')">0</button>
+        <button onclick="ajouterAffichage('.')">.</button>
+        <button onclick="calculerResultat()" class="egal">=</button>
+
+        <button onclick="ajouterAffichage('Math.sin(')">sin</button>
+        <button onclick="ajouterAffichage('Math.cos(')">cos</button>
+        <button onclick="ajouterAffichage('Math.tan(')">tan</button>
+        <button onclick="ajouterAffichage('Math.log10(')">log</button>
+
+        <button onclick="ajouterAffichage('Math.PI')">π</button>
+        <button onclick="ajouterAffichage('Math.E')">e</button>
+        <button onclick="ajouterAffichage('**')">^</button>
+        <button onclick="ajouterAffichage('Math.sqrt(')">√</button>
+    </div>
+</div>
+
+<div class="chatbot">
+    <div class="messages" id="chatbot-messages"></div>
+    <input type="text" id="chatbot-input" placeholder="Posez une question..." onkeydown="envoyerMessage(event)">
+</div>
+
+<!-- Tawk.to Chat Widget -->
+<script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+        s1.async=true;
+        s1.src='https://embed.tawk.to/YOUR_TAWKTO_PROPERTY_ID/default'; // Remplacez par votre ID
+        s1.charset='UTF-8';
+        s1.setAttribute('crossorigin','*');
+        s0.parentNode.insertBefore(s1,s0);
+    })();
+</script>
+
+<script>
+    function ajouterAffichage(valeur) {
+        document.getElementById("affichage").value += valeur;
+    }
+
+    function effacerAffichage() {
+        document.getElementById("affichage").value = "";
+        document.getElementById("historique").innerHTML = "";
+    }
+
+    function calculerResultat() {
+        try {
+            let expression = document.getElementById("affichage").value;
+            expression = expression.replace(/\^/g, '**');
+            let resultat = eval(expression);
+            mettreAJourHistorique(expression, resultat);
+            document.getElementById("affichage").value = resultat;
+        } catch (error) {
+            document.getElementById("affichage").value = "Erreur";
+            secouerAffichage();
+        }
+    }
+
+    function gererTouche(event) {
+        if (event.key === "Enter") {
+            calculerResultat();
+        } else if (event.key === "Escape") {
+            effacerAffichage();
+        }
+    }
+
+    function mettreAJourHistorique(expression, resultat) {
+        let historique = document.getElementById("historique");
+        historique.innerHTML += `<div onclick="definirAffichage('${expression}')">${expression} = <strong>${resultat}</strong></div>`;
+        historique.scrollTop = historique.scrollHeight;
+    }
+
+    function definirAffichage(expression) {
+        document.getElementById("affichage").value = expression;
+    }
+
+    function changerTheme(event) {
+        const theme = event.target.value;
+        if (theme === "sombre") {
+            document.body.style.backgroundColor = "#34495e";
+            document.documentElement.style.setProperty('--background-color', '#2c3e50');
+        } else if (theme === "clair") {
+            document.body.style.backgroundColor = "#ecf0f1";
+            document.documentElement.style.setProperty('--background-color', '#ecf0f1');
+        } else if (theme === "neon") {
+            document.body.style.backgroundColor = "#000";
+            document.documentElement.style.setProperty('--button-color', '#00ff00');
+        } else if (theme === "retro") {
+            document.body.style.backgroundColor = "#ffcc00";
+            document.documentElement.style.setProperty('--button-color', '#ff5733');
+        }
+    }
+
+    function secouerAffichage() {
+        const affichage = document.getElementById("affichage");
+        affichage.classList.add('shake');
+        setTimeout(() => affichage.classList.remove('shake'), 500);
+    }
+
+    function envoyerMessage(event) {
+        if (event.key === "Enter") {
+            const input = document.getElementById("chatbot-input");
+            const message = input.value;
+            if (message) {
+                ajouterMessage("Vous: " + message);
+                input.value = ""; // Effacer l'entrée
+
+                // Réponse de test
+                ajouterMessage("Bot: Merci pour votre message!");
+            }
+        }
+    }
+
+    function ajouterMessage(message) {
+        const messagesDiv = document.getElementById("chatbot-messages");
+        messagesDiv.innerHTML += "<div>" + message + "</div>";
+        messagesDiv.scrollTop = messagesDiv.scrollHeight; // Faire défiler vers le bas
+    }
+</script>
+
+</body>
+</html>
